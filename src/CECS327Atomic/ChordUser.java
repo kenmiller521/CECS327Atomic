@@ -44,7 +44,9 @@ public class ChordUser
 			try {	
 				int guid = Integer.parseInt(tokens[1]);
 				// If you are using windows you have to use
- 				String path = ".\\"+  port +"\\"+Integer.parseInt(tokens[1]); // path to file
+ 				String path = ".\\"+  port +"\\repository\\"+Integer.parseInt(tokens[1])+".txt"; // path to file
+                                //String path = ".\\"+  port +"\\"+Integer.parseInt(tokens[1])+".txt"; // path to file
+                                //String path = ".\\"+  port +"\\"+Integer.parseInt(tokens[1]); // path to file
 				//String path = "./"+  port +"/"+guid; // path to file
 				FileStream file = new FileStream(path);
 				ChordMessageInterface peer = chord.locateSuccessor(guid);
@@ -57,7 +59,8 @@ public class ChordUser
 			try {	
 			  int guid = Integer.parseInt(tokens[1]);
 			  // If you are using windows you have to use
-                         String path = ".\\"+  port +"\\"+Integer.parseInt(tokens[1]); // path to file
+                         String path = ".\\"+  port +"\\repository\\"+Integer.parseInt(tokens[1])+".txt"; // path to file
+                                //String path = ".\\"+  port +"\\"+Integer.parseInt(tokens[1])+".txt"; // path to file
 			 // String path = "./"+  port +"/"+guid; // path to file
 			  FileStream file = new FileStream(path);
 			  ChordMessageInterface peer = chord.locateSuccessor(guid);

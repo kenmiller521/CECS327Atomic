@@ -54,7 +54,8 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
     public void put(int guid, InputStream stream) throws RemoteException {
 	 //TODO Store the file at ./port/repository/guid
       try {
-	 String fileName = "./"+i+"/repository/" + guid;
+	 String fileName = ".\\"+i+"\\repository\\" + guid;
+         //String fileName = "./"+i+"/repository/" + guid;
 	 FileOutputStream output = new FileOutputStream(fileName);
 	 while (stream.available() > 0)
 	    output.write(stream.read());
@@ -66,7 +67,8 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
     
     
     public InputStream get(int guid) throws RemoteException {
-	 String fileName = "./"+i+"/repository/" + guid;
+	 String fileName = ".\\"+i+"\\repository\\" + guid;
+         //String fileName = "./"+i+"/repository/" + guid;
 	 FileStream file= null;
 	 try{
 	   file = new FileStream(fileName);
@@ -77,7 +79,8 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
     }
     
     public void delete(int guid) throws RemoteException {
-	  String fileName = "./"+i+"/repository/" + guid;
+	  String fileName = ".\\"+i+"\\repository\\" + guid;
+          //String fileName = "./"+i+"/repository/" + guid;
 
           File file = new File(fileName);
 	  file.delete();
