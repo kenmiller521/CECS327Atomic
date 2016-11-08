@@ -3,11 +3,15 @@ package CECS327Atomic;
 import java.rmi.*;
 import java.net.*;
 import java.util.*;
-import java.io.*;;
+import java.io.*;import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+;
 
  
 public class ChordUser
 {
+    
      int port;
      public ChordUser(int p) {
         port = p;
@@ -42,9 +46,10 @@ public class ChordUser
 		    if  (tokens[0].equals("write") && tokens.length == 2) {
 			
 			try {	
-				int guid = Integer.parseInt(tokens[1]);
+				//int guid = Integer.parseInt(tokens[1]);
+                                int guid = md5(tokens[1]);
 				// If you are using windows you have to use
- 				String path = ".\\"+  port +"\\repository\\"+Integer.parseInt(tokens[1])+".txt"; // path to file
+ 				String path = ".\\"+  port +"\\repository\\"+tokens[1]; // path to file. user has to write '.txt' or the extension of the file
                                 //String path = ".\\"+  port +"\\"+Integer.parseInt(tokens[1])+".txt"; // path to file
                                 //String path = ".\\"+  port +"\\"+Integer.parseInt(tokens[1]); // path to file
 				//String path = "./"+  port +"/"+guid; // path to file
@@ -57,9 +62,11 @@ public class ChordUser
 		    }
 		    if  (tokens[0].equals("read") && tokens.length == 2) {
 			try {	
-			  int guid = Integer.parseInt(tokens[1]);
+			  //int guid = Integer.parseInt(tokens[1]);
+                          int guid = md5(tokens[1]);
 			  // If you are using windows you have to use
-                         String path = ".\\"+  port +"\\repository\\"+Integer.parseInt(tokens[1])+".txt"; // path to file
+                         //String path = ".\\"+  port +"\\repository\\"+Integer.parseInt(tokens[1])+".txt"; // path to file
+                         String path = ".\\"+  port +"\\repository\\"+tokens[1];
                                 //String path = ".\\"+  port +"\\"+Integer.parseInt(tokens[1])+".txt"; // path to file
 			 // String path = "./"+  port +"/"+guid; // path to file
 			  FileStream file = new FileStream(path);
@@ -71,7 +78,9 @@ public class ChordUser
 		    }
 		    if  (tokens[0].equals("delete") && tokens.length == 2) {
 			try {
-			  chord.delete(Integer.parseInt(tokens[1]));
+                            //everytime we use the cloud use the interger, client use the string
+                          int guid = md5(tokens[1]);
+			  chord.delete(guid);
 			} catch (Exception e) {
 			      e.printStackTrace();
 			}
@@ -98,4 +107,18 @@ public class ChordUser
            System.exit(1);
 	}
      } 
+    public int md5(String str) throws NoSuchAlgorithmException, UnsupportedEncodingException
+    {
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        //byte[] bytesOfMessage = str.getBytes("UTF-8");
+        //byte[] thedigest = md.digest(bytesOfMessage);
+        md.update(str.getBytes(),0,str.length());
+        BigInteger bigInt = new BigInteger(1, md.digest());
+        //use prime number to modulo
+        int intToReturn = bigInt.intValue()%15000;
+        return intToReturn;
+        
+        //first need to do md5.update
+        
+    }
 }
