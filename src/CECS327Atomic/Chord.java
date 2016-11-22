@@ -6,6 +6,8 @@ import java.rmi.server.*;
 import java.net.*;
 import java.util.*;
 import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
  
 public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordMessageInterface
 {
@@ -26,7 +28,11 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
     private Iterator iter;
     private ChordMessageInterface element;
     private Boolean currentlyVoting;
+    private int yesVoteCounter,noVoteCounter;
 
+    
+
+    
 
     
   
@@ -381,6 +387,9 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
     
     public void canCommit() throws IOException, RemoteException 
     {
+        //reset counters
+        noVoteCounter = 0;
+        yesVoteCounter = 0;
         iter = nodeList.iterator();
         //send the canCommit request to participants
         while(iter.hasNext())
@@ -389,21 +398,85 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
             //send the request
             element.sendCanCommitToParticipant();
         }
+        //stay until all votes are yes or if there is one no counter
+        while(noVoteCounter == 0 && (yesVoteCounter != nodeList.size()))
+        {
+            
+        }
+        if(yesVoteCounter == nodeList.size())
+        {
+            System.out.println("All participants ready to commit.");
+        }
+        else if(noVoteCounter != 0)
+        {
+            System.out.println("Aborting. A participant is not ready to commit. Proceed with menu selection.");
+        }
+            
+    }
+    public void cancelCanCommitRequest() throws IOException, RemoteException 
+    {
+        currentlyVoting = false;
+        System.out.println("COORDINATOR: Commit cancelled");
     }
     public void sendCanCommitToParticipant() throws IOException, RemoteException
     {
         currentlyVoting = true;
-        System.out.println("COORDINATOR: Can you commit(Y/N)?");       
+        System.out.println("COORDINATOR: Can you commit(Y/N)?"); 
+        Timer t = new Timer();
+        t.schedule(new TimerTask() 
+        {
+            int i = 10;
+            @Override
+            public void run() 
+            {                
+                System.out.println("Timeout in " + i + "."); 
+                i--;
+                if(i==0)
+                {
+                    try 
+                    {
+                        //send timeout to coordinator to resend cancommit request
+                        coordinator.canCommitTimeout();
+                    }
+                    catch (IOException ex) 
+                    {
+                        Logger.getLogger(Chord.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    t.cancel();
+                }
+                else if(currentlyVoting == false)
+                {
+                    t.cancel();
+                }
+            }
+        }, 0, 1000);     
+    }
+    @Override
+    public void canCommitTimeout() throws IOException, RemoteException 
+    {
+        System.out.println("Timeout - Resending request.");
+        canCommit();
     }
     public void sendCommitVoteToCoordinator(int vote,ChordMessageInterface j) throws IOException, RemoteException 
     {
         if(vote == 1)
         {
             System.out.println("YES VOTE FROM " + j.getId());
+            yesVoteCounter++;
         }
         else
         {
+            noVoteCounter++;
             System.out.println("NO VOTE FROM " + j.getId());
+            //cancel commit
+            iter = nodeList.iterator();
+            //send the canCommit request to participants
+            while(iter.hasNext())
+            {
+                element = (ChordMessageInterface) iter.next();
+                //send the request
+                element.cancelCanCommitRequest();
+            }
         }            
     }
     public Boolean isVoting()
@@ -414,9 +487,10 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
     {
         if(text.equals("Y"))
         {
+            //save work to storage
             coordinator.sendCommitVoteToCoordinator(1,this);
         }
-        else
+        else if(text.equals("N"))
         {
             coordinator.sendCommitVoteToCoordinator(0,this);
         }

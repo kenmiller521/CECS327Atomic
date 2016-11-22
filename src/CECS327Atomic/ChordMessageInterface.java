@@ -27,7 +27,9 @@ public interface ChordMessageInterface extends Remote
     public void sendMessage(int port,ChordMessageInterface j, enum_MSG msg)throws IOException, RemoteException;
     public void setCoordinator(ChordMessageInterface j) throws IOException, RemoteException;
     public void canCommit() throws IOException, RemoteException;
+    public void cancelCanCommitRequest() throws IOException, RemoteException;
     public void sendCanCommitToParticipant() throws IOException, RemoteException;
+    public void canCommitTimeout() throws IOException, RemoteException;
     public void sendCommitVoteToCoordinator(int vote,ChordMessageInterface j) throws IOException, RemoteException;
     public void addChordObjectToCoordinatorList(ChordMessageInterface j) throws IOException, RemoteException;
 
