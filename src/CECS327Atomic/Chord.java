@@ -12,12 +12,32 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
     public static final int M = 2;
     
     Registry registry;    // rmi registry for lookup the remote objects.
+    ChordMessageInterface coordinator;
     ChordMessageInterface successor;
     ChordMessageInterface predecessor;
     ChordMessageInterface[] finger;
     int nextFinger;
     int i;   		// GUID
+    public String msgID;
+    public enum_MSG msg;
+    private int isCoordinator;
+
+    List<ChordMessageInterface> nodeList = new ArrayList<ChordMessageInterface>();
+    private Iterator iter;
+    private ChordMessageInterface element;
+    private Boolean currentlyVoting;
+
+
     
+  
+
+    public enum enum_MSG 
+    {
+        //Start with join, accept, 
+        ELECT, //0
+        CANCOMMIT, //1
+        COORDINATOR//2
+    };
     
     public ChordMessageInterface rmiChord(String ip, int port)
     {	
@@ -224,6 +244,7 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
        
     public Chord(int port) throws RemoteException {
         int j;
+        currentlyVoting = false;
 	finger = new ChordMessageInterface[M];
         for (j=0;j<M; j++){
 	    finger[j] = null;
@@ -270,10 +291,136 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
 	      finger[i] = null;
 	   }
 	  }
+          if(coordinator != null)
+          {
+              System.out.println("coordinator "+ coordinator.getId());              
+          }          
+          if(isCoordinator==1)
+          {              
+              System.out.println("participants ");
+              iter = nodeList.iterator();
+              while(iter.hasNext())
+              {
+                  element = (ChordMessageInterface) iter.next();
+                  System.out.println("\t"+element.getId());
+              }
+          }
        }
         catch(RemoteException e){
 	       System.out.println("Cannot retrive id");
         } 
     }
-   
+    
+    //function that handles the election of the processes
+    public void election(int port) throws IOException {
+        if(port == i)
+        {
+            System.out.println("YOU ARE THE COORDINATOR");
+            isCoordinator = 1;
+            System.out.println("COORDINATOR PORT: " + this.i);
+            successor.setCoordinator(this);
+            
+        }
+        else if(port > i)
+        {
+            //If the passed port is bigger than this port, then send the passed port to the successor
+            System.out.println("PASSING PREDECESSOR PORT TO SUCCESSOR");
+            successor.election(port);
+            isCoordinator = 0;
+        }
+        else
+        {
+            System.out.println("PASSING YOUR PORT TO SUCCESSOR");
+            //if the port is smaller than this port, then send this port to the successor
+            successor.election(i);
+            isCoordinator = 0;
+        }
+    }
+
+    @Override
+    public void answer(int port) throws IOException, RemoteException {
+        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        System.out.println("YOU ARE THE COORDINATOR TO USER " + port);
+    }
+      @Override
+    public void receiveMessage(ChordMessageInterface j, enum_MSG msg) throws IOException, RemoteException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void sendMessage(int port,ChordMessageInterface j, enum_MSG msg) throws IOException, RemoteException {
+        if(msg.toString().equals("ELECT"))
+        {
+            successor.election(i);            
+        } 
+        else if(msg.toString().equals("CANCOMMIT"))
+        {
+            canCommit();
+        }
+    } 
+    public int isCoordinator()
+    {
+        return isCoordinator;
+    }
+    public void setCoordinator(ChordMessageInterface j) throws IOException
+    {
+        if(coordinator == null)
+        {
+            coordinator = j;
+            successor.setCoordinator(coordinator);
+            coordinator.addChordObjectToCoordinatorList(this);
+            
+        }        
+    }
+    @Override
+    public void addChordObjectToCoordinatorList(ChordMessageInterface j) throws IOException, RemoteException 
+    {
+        if(j.getId() != coordinator.getId())
+            nodeList.add(j);
+    }
+    
+    public void canCommit() throws IOException, RemoteException 
+    {
+        iter = nodeList.iterator();
+        //send the canCommit request to participants
+        while(iter.hasNext())
+        {
+            element = (ChordMessageInterface) iter.next();
+            //send the request
+            element.sendCanCommitToParticipant();
+        }
+    }
+    public void sendCanCommitToParticipant() throws IOException, RemoteException
+    {
+        currentlyVoting = true;
+        System.out.println("COORDINATOR: Can you commit(Y/N)?");       
+    }
+    public void sendCommitVoteToCoordinator(int vote,ChordMessageInterface j) throws IOException, RemoteException 
+    {
+        if(vote == 1)
+        {
+            System.out.println("YES VOTE FROM " + j.getId());
+        }
+        else
+        {
+            System.out.println("NO VOTE FROM " + j.getId());
+        }            
+    }
+    public Boolean isVoting()
+    {
+        return currentlyVoting;
+    }
+    public void sendVote(String text) throws IOException
+    {
+        if(text.equals("Y"))
+        {
+            coordinator.sendCommitVoteToCoordinator(1,this);
+        }
+        else
+        {
+            coordinator.sendCommitVoteToCoordinator(0,this);
+        }
+        currentlyVoting = false;
+    
+    }
 }
