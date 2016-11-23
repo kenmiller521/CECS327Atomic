@@ -29,6 +29,7 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
     private ChordMessageInterface element;
     private Boolean currentlyVoting;
     private int yesVoteCounter,noVoteCounter;
+    private Boolean currentlyCommitting;
 
     
 
@@ -479,7 +480,7 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
             }
         }            
     }
-    public Boolean isVoting()
+    public boolean isVoting()
     {
         return currentlyVoting;
     }
@@ -498,23 +499,32 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
     
     }
     
+    public boolean isCommitting()
+    {
+        return currentlyCommitting;
+    }
+    
     public void doCommit() throws IOException, RemoteException
     {
-        
+        currentlyCommitting = true;
+        participant.put();
+        // continue with transaction
     }
     
     public void doAbort() throws IOException, RemoteException
     {
-        
+        currentlyCommitting = false;
+        System.out.println("COORDINATOR: Transaction Aborted");
     }
     
     public void haveCommitted throws IOException, RemoteException
     {
-        
+        // TODO Call from paricipant to the the coord to confirm that is has commited the transaction
     }
     
     public boolean getDecision() throws IOException, RemoteException
     {
-        
+        // TODO Yes/No: Call from participant to coord to ask for the decision on a transaction when it has voted
+        // yes but has still had no reply after some delay. Used to recover from server crash or delayed messages
     }
 }
