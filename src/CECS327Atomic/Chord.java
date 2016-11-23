@@ -497,4 +497,24 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
         currentlyVoting = false;
     
     }
+    
+    public void doCommit() throws IOException, RemoteException
+    {
+        
+    }
+    
+    public void doAbort() throws IOException, RemoteException
+    {
+        
+    }
+    
+    public void haveCommitted throws IOException, RemoteException
+    {
+        
+    }
+    
+    public boolean getDecision() throws IOException, RemoteException
+    {
+        
+    }
 }

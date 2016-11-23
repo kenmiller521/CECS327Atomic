@@ -32,19 +32,19 @@ public interface ChordMessageInterface extends Remote
     public void sendCommitVoteToCoordinator(int vote,ChordMessageInterface j) throws IOException, RemoteException;
     public void addChordObjectToCoordinatorList(ChordMessageInterface j) throws IOException, RemoteException;
     
-    public boolean canCommit() throws IOException, RemoteException;
+    public void canCommit() throws IOException, RemoteException;
     //Yes/No: Call from coord to participant to ask whether it can commit a transaction. Participant replies with its vote
     
-    public void doCommit() throws RemoteException;
+    public void doCommit() throws IOException, RemoteException;
     // Call from coord to participant to tell participant to commit its part of a transaction
     
-    public void doAbort() throws RemoteException;
+    public void doAbort() throws IOException, RemoteException;
     // Call from the coord to participant to tell participant to abort its part of a transaction
     
-    public void haveCommitted() throws RemoteException;
+    public void haveCommitted() throws IOException, RemoteException;
     // Call from paricipant to the the coord to confirm that is has commited the transaction
     
-    public boolean getDecision() throws RemoteException;
+    public boolean getDecision() throws IOException, RemoteException;
     // Yes/No: Call from participant to coord to ask for the decision on a transaction when it has voted Yes but has still had no reply after some delay. Used to recover from server crash or delayed messages
 
 }
