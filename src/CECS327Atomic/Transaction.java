@@ -5,6 +5,7 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Timestamp;
 
 public class Transaction implements Serializable  {
     public enum Operation { WRITE, DELETE}
@@ -14,11 +15,21 @@ public class Transaction implements Serializable  {
     byte vote;
     FileStream fileStream;   
     MessageDigest md = MessageDigest.getInstance("MD5");
+    
+    Timestamp timestamp = new Timestamp(System.currentTimeMillis());
     public Transaction(Operation op) throws NoSuchAlgorithmException
     {
         
         //id = md5(date + ip+port);
         this.op = op;
+    }
+    public void setTimestamp(Timestamp stamp)
+    {
+        timestamp = stamp;
+    }
+    public Timestamp getTimestamp()
+    {
+        return timestamp;
     }
     /*
     public int md5(int i)            
