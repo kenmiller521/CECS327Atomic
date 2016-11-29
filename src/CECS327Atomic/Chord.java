@@ -392,6 +392,7 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
         noVoteCounter = 0;
         yesVoteCounter = 0;
         iter = nodeList.iterator();
+        Timer tt = new Timer();
         //send the canCommit request to participants
         while(iter.hasNext())
         {
@@ -400,24 +401,46 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
             element.sendCanCommitToParticipant();
         }
         //stay until all votes are yes or if there is one no counter
-        while(noVoteCounter == 0 && (yesVoteCounter != nodeList.size()))
+        tt.schedule(new TimerTask() 
         {
-            
-        }
-        if(yesVoteCounter == nodeList.size())
-        {
-            System.out.println("All participants ready to commit.");
-        }
-        else if(noVoteCounter != 0)
-        {
-            System.out.println("Aborting. A participant is not ready to commit. Proceed with menu selection.");
-        }
-            
+            @Override
+            public void run() 
+            {               
+                if(noVoteCounter == 0 && (yesVoteCounter != nodeList.size()))
+                { 
+                    System.out.println("Waiting for participants to respond.");
+                }
+                else if(yesVoteCounter == nodeList.size())
+                {
+                    System.out.println("All participants ready to commit. Proceed with menu selection.");  
+                    System.out.println("Usage: \n\tjoin <port>\n\twrite <file> (the file must be an integer stored in the working directory, i.e, ./port/file");
+                    System.out.println("\tread <file>\n\tdelete <file>\n\tprint\n\telection");
+                    if(isCoordinator()==1)
+                    {
+                        System.out.println("COORDINATOR USAGE: \n\tcanCommit");
+                    }
+                    tt.cancel();
+                }
+                else if(noVoteCounter != 0)
+                {
+                    System.out.println("Aborting. A participant is not ready to commit. Proceed with menu selection.");
+                    System.out.println("Usage: \n\tjoin <port>\n\twrite <file> (the file must be an integer stored in the working directory, i.e, ./port/file");
+                    System.out.println("\tread <file>\n\tdelete <file>\n\tprint\n\telection");   
+                    if(isCoordinator()==1)
+                    {
+                        System.out.println("COORDINATOR USAGE: \n\tcanCommit");
+                    }
+                    tt.cancel();
+                }
+            }
+        }, 0, 1000);           
     }
     public void cancelCanCommitRequest() throws IOException, RemoteException 
     {
         currentlyVoting = false;
-        System.out.println("COORDINATOR: Commit cancelled");
+        System.out.println("COORDINATOR: Commit cancelled. Proceed with menu selection.");
+        System.out.println("Usage: \n\tjoin <port>\n\twrite <file> (the file must be an integer stored in the working directory, i.e, ./port/file");
+        System.out.println("\tread <file>\n\tdelete <file>\n\tprint\n\telection");  
     }
     public void sendCanCommitToParticipant() throws IOException, RemoteException
     {
@@ -507,7 +530,7 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
     public void doCommit() throws IOException, RemoteException
     {
         currentlyCommitting = true;
-        participant.put();
+        //participant.put();
         // continue with transaction
     }
     
@@ -517,7 +540,7 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
         System.out.println("COORDINATOR: Transaction Aborted");
     }
     
-    public void haveCommitted throws IOException, RemoteException
+    public void haveCommitted() throws IOException, RemoteException
     {
         // TODO Call from paricipant to the the coord to confirm that is has commited the transaction
     }
@@ -526,5 +549,6 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
     {
         // TODO Yes/No: Call from participant to coord to ask for the decision on a transaction when it has voted
         // yes but has still had no reply after some delay. Used to recover from server crash or delayed messages
+        return false;
     }
 }
