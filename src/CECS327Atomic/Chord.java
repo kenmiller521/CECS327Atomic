@@ -23,7 +23,9 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
     public String msgID;
     public enum_MSG msg;
     private int isCoordinator;
-
+    
+    HashMap<Integer,Timestamp> LastWriteTime = new HashMap<Integer,Timestamp>(); 
+    HashMap<Integer,Timestamp> LastReadTime = new HashMap<Integer,Timestamp>();
     List<ChordMessageInterface> nodeList = new ArrayList<ChordMessageInterface>();
     private Iterator iter;
     private ChordMessageInterface element;
