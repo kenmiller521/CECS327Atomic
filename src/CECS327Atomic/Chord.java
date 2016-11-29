@@ -8,11 +8,11 @@ import java.util.*;
 import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
- 
+import java.sql.Timestamp;
 public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordMessageInterface
 {
     public static final int M = 2;
-    
+    Timestamp timestamp = new Timestamp(System.currentTimeMillis());
     Registry registry;    // rmi registry for lookup the remote objects.
     ChordMessageInterface coordinator;
     ChordMessageInterface successor;
