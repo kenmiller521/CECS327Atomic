@@ -1,5 +1,6 @@
 package CECS327Atomic;
 
+import CECS327Atomic.ChordMessageInterface;
 import java.rmi.*;
 import java.rmi.registry.*;
 import java.rmi.server.*;
@@ -32,6 +33,11 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
     private Boolean currentlyVoting;
     private int yesVoteCounter,noVoteCounter;
     private Boolean currentlyCommitting;
+
+    @Override
+    public void canCommit(Transaction trans) throws IOException, RemoteException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
     
 
@@ -532,6 +538,7 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
     public void doCommit() throws IOException, RemoteException
     {
         currentlyCommitting = true;
+       LastWriteTime.put(i, timestamp);
         //participant.put();
         // continue with transaction
     }

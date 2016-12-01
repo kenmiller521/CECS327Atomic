@@ -32,7 +32,7 @@ public interface ChordMessageInterface extends Remote
     public void sendCommitVoteToCoordinator(int vote,ChordMessageInterface j) throws IOException, RemoteException;
     public void addChordObjectToCoordinatorList(ChordMessageInterface j) throws IOException, RemoteException;
     
-    public void canCommit() throws IOException, RemoteException;
+    public void canCommit(Transaction trans) throws IOException, RemoteException;
     //Yes/No: Call from coord to participant to ask whether it can commit a transaction. Participant replies with its vote
     
     public void doCommit() throws IOException, RemoteException;
