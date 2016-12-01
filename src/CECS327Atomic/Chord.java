@@ -7,6 +7,9 @@ import java.rmi.server.*;
 import java.net.*;
 import java.util.*;
 import java.io.*;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.sql.Timestamp;
@@ -16,7 +19,7 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
     Timestamp timestamp = new Timestamp(System.currentTimeMillis());
     Registry registry;    // rmi registry for lookup the remote objects.
     ChordMessageInterface coordinator;
-    ChordMessageInterface successor;
+ChordMessageInterface successor;
     ChordMessageInterface predecessor;
     ChordMessageInterface[] finger;
     int nextFinger;
@@ -34,9 +37,73 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
     private int yesVoteCounter,noVoteCounter;
     private Boolean currentlyCommitting;
 
+    /**
+     *
+     * @param trans
+     * @return
+     * @throws IOException
+     * @throws RemoteException
+     */
     @Override
-    public void canCommit(Transaction trans) throws IOException, RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public boolean canCommit(Transaction trans) throws IOException, RemoteException {
+        //if(trans.timestamp > LastWriteTime.)
+        //{
+        //   return true;
+        //}
+       //else
+            return false;
+        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    void writeAtomic(String fileName) throws NoSuchAlgorithmException, UnsupportedEncodingException, RemoteException, IOException 
+    {
+        //open up the file
+        FileStream stream = new FileStream(".\\"+  i +"\\repository\\"+fileName);
+        //open the file, transmit
+        
+        Transaction trans = new Transaction(Transaction.Operation.WRITE);
+        
+        int guid1 = md5(fileName+1);
+        int guid2 = md5(fileName+2);
+        int guid3 = md5(fileName+3);
+        int guid4 = md5(fileName);
+        trans.guid = guid4;
+        ChordMessageInterface p1 = locateSuccessor(guid1);
+        boolean v1 = p1.canCommit(trans);
+        ChordMessageInterface p2 = locateSuccessor(guid2);
+        boolean v2 = p2.canCommit(trans);
+        ChordMessageInterface p3 = locateSuccessor(guid3);
+        boolean v3 = p3.canCommit(trans);
+        //ChordMessageInterface p4 = locateSuccessor(guid4);
+        //boolean v4 = p4.canCommit(trans);
+        if(v1&&v2&&v3)
+        {
+            p1.doCommit(trans,guid1,stream);
+            stream.reset();
+            p2.doCommit(trans,guid2,stream);
+            stream.reset();
+            p3.doCommit(trans,guid3,stream);
+            stream.reset();
+           // p4.doCommit(trans,guid4);
+            
+        }
+        else
+        {
+            p1.doAbort(trans);
+            p2.doAbort(trans);
+            p3.doAbort(trans);
+            //p4.doAbort(trans);
+        }
+        //use guid4 to update the database
+        
+        
+        //Find the peers which should be located, look for participants
+        //can commit to all of them
+        //do commit/do abort depending on votes
+       // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    void readAtomic(String fileName)
+    {
     }
 
     
@@ -325,7 +392,7 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
 	       System.out.println("Cannot retrive id");
         } 
     }
-    
+    /*
     //function that handles the election of the processes
     public void election(int port) throws IOException {
         if(port == i)
@@ -351,7 +418,7 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
             isCoordinator = 0;
         }
     }
-
+*/
     @Override
     public void answer(int port) throws IOException, RemoteException {
         //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -366,7 +433,7 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
     public void sendMessage(int port,ChordMessageInterface j, enum_MSG msg) throws IOException, RemoteException {
         if(msg.toString().equals("ELECT"))
         {
-            successor.election(i);            
+            //successor.election(i);            
         } 
         else if(msg.toString().equals("CANCOMMIT"))
         {
@@ -535,15 +602,16 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
         return currentlyCommitting;
     }
     
-    public void doCommit() throws IOException, RemoteException
+    public void doCommit(Transaction trans, int guid,FileStream stream) throws IOException, RemoteException
     {
         currentlyCommitting = true;
-       LastWriteTime.put(i, timestamp);
+        LastWriteTime.put(trans.guid, timestamp);
+        put(guid,stream);
         //participant.put();
         // continue with transaction
     }
     
-    public void doAbort() throws IOException, RemoteException
+    public void doAbort(Transaction trans) throws IOException, RemoteException
     {
         currentlyCommitting = false;
         System.out.println("COORDINATOR: Transaction Aborted");
@@ -559,5 +627,19 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
         // TODO Yes/No: Call from participant to coord to ask for the decision on a transaction when it has voted
         // yes but has still had no reply after some delay. Used to recover from server crash or delayed messages
         return false;
+    }
+    public int md5(String str) throws NoSuchAlgorithmException, UnsupportedEncodingException
+    {
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        //byte[] bytesOfMessage = str.getBytes("UTF-8");
+        //byte[] thedigest = md.digest(bytesOfMessage);
+        md.update(str.getBytes(),0,str.length());
+        BigInteger bigInt = new BigInteger(1, md.digest());
+        //use prime number to modulo
+        int intToReturn = bigInt.intValue()%15000;
+        return intToReturn;
+        
+        //first need to do md5.update
+        
     }
 }

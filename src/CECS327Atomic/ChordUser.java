@@ -77,15 +77,21 @@ public class ChordUser
 
                           try {	
                                   //int guid = Integer.parseInt(tokens[1]);
-                                  int guid = md5(tokens[1]);
+                                  //int guid = md5(tokens[1]);
                                   // If you are using windows you have to use
-                                  String path = ".\\"+  port +"\\repository\\"+tokens[1]; // path to file. user has to write '.txt' or the extension of the file
+                                  //String path = ".\\"+  port +"\\repository\\"+tokens[1]; // path to file. user has to write '.txt' or the extension of the file
                                   //String path = ".\\"+  port +"\\"+Integer.parseInt(tokens[1])+".txt"; // path to file
                                   //String path = ".\\"+  port +"\\"+Integer.parseInt(tokens[1]); // path to file
                                   //String path = "./"+  port +"/"+guid; // path to file
-                                  FileStream file = new FileStream(path);
-                                  ChordMessageInterface peer = chord.locateSuccessor(guid);
-                                  peer.put(guid, file); // put file into ring
+                                  //FileStream file = new FileStream(path);
+                                  //ChordMessageInterface peer = chord.locateSuccessor(guid);
+                                  //peer.put(guid, file); // put file into ring
+                                  chord.writeAtomic(tokens[1]);
+                                  
+                                  //This will be the coordinator
+                                  
+                                  
+                                  
                           } catch (Exception e) {
                                   e.printStackTrace();
                           } 
@@ -115,11 +121,12 @@ public class ChordUser
                                 e.printStackTrace();
                           }
                       }
+                      /*
                       if(tokens[0].toUpperCase().equals("ELECTION"))
                       {
                           chord.sendMessage(port,chord, Chord.enum_MSG.ELECT);
                       }
-                      
+                      */
                       if(chord.isCoordinator() == 1)
                       {
                         if(tokens[0].toUpperCase().equals("CANCOMMIT"))
@@ -168,3 +175,11 @@ public class ChordUser
         
     }
 }
+
+
+
+
+
+
+
+

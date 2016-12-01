@@ -38,4 +38,10 @@ public class FileStream extends InputStream implements Serializable {
     {
 	return size - currentPosition;
     }
+    
+    //need a reset function
+    public void reset()
+    {
+        currentPosition = 0;
+    }
 }

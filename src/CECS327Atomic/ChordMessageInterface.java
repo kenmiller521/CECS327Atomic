@@ -21,7 +21,7 @@ public interface ChordMessageInterface extends Remote
     
     
     
-    public void election(int port) throws IOException, RemoteException;
+    //public void election(int port) throws IOException, RemoteException;
     public void answer(int port) throws IOException, RemoteException;
     public void receiveMessage(ChordMessageInterface j, enum_MSG msg) throws IOException, RemoteException;
     public void sendMessage(int port,ChordMessageInterface j, enum_MSG msg)throws IOException, RemoteException;
@@ -32,13 +32,13 @@ public interface ChordMessageInterface extends Remote
     public void sendCommitVoteToCoordinator(int vote,ChordMessageInterface j) throws IOException, RemoteException;
     public void addChordObjectToCoordinatorList(ChordMessageInterface j) throws IOException, RemoteException;
     
-    public void canCommit(Transaction trans) throws IOException, RemoteException;
+    public boolean canCommit(Transaction trans) throws IOException, RemoteException;
     //Yes/No: Call from coord to participant to ask whether it can commit a transaction. Participant replies with its vote
     
-    public void doCommit() throws IOException, RemoteException;
+    public void doCommit(Transaction trans,int guid,FileStream stream) throws IOException, RemoteException;
     // Call from coord to participant to tell participant to commit its part of a transaction
     
-    public void doAbort() throws IOException, RemoteException;
+    public void doAbort(Transaction trans) throws IOException, RemoteException;
     // Call from the coord to participant to tell participant to abort its part of a transaction
     
     public void haveCommitted() throws IOException, RemoteException;
