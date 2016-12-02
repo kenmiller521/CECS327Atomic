@@ -602,15 +602,28 @@ ChordMessageInterface successor;
         return currentlyCommitting;
     }
     
+    @Override
     public void doCommit(Transaction trans, int guid,FileStream stream) throws IOException, RemoteException
     {
-        currentlyCommitting = true;
-        LastWriteTime.put(trans.guid, timestamp);
-        put(guid,stream);
-        //participant.put();
-        // continue with transaction
+        if (trans.Operation == WRITE)
+        {
+            currentlyCommitting = true;
+            put(guid, trans.fileStream);
+            LastWriteTime.put(trans.guid, trans.timestamp);
+            String fileName = ".\\"+i+"\\repository\\" + trans.guid;
+            
+            try
+            {
+                FileOutputStream fileOutput = new FileOutputStream(fileName);
+                fileOutput.write(trans.fileStream.read());
+                
+            }catch(IOException e)
+        }
+        
+        
     }
     
+    @Override
     public void doAbort(Transaction trans) throws IOException, RemoteException
     {
         currentlyCommitting = false;
@@ -622,6 +635,7 @@ ChordMessageInterface successor;
         // TODO Call from paricipant to the the coord to confirm that is has commited the transaction
     }
     
+    @Override
     public boolean getDecision() throws IOException, RemoteException
     {
         // TODO Yes/No: Call from participant to coord to ask for the decision on a transaction when it has voted
