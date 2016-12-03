@@ -32,15 +32,16 @@ public class ChordUser
 		while (true)
 		{
                   System.out.println("Usage: \n\tjoin <port>\n\twrite <file> (the file must be an integer stored in the working directory, i.e, ./port/file");
-                  System.out.println("\tread <file>\n\tdelete <file>\n\tprint\n\telection");
-                  if(chord.isCoordinator()==1)
-                  {
-                      System.out.println("COORDINATOR USAGE: \n\tcanCommit");
-                  }
+                  System.out.println("\tread <file>\n\tdelete <file>");
+                  //if(chord.isCoordinator()==1)
+                  //{
+                  //    System.out.println("COORDINATOR USAGE: \n\tcanCommit");
+                 // }
                   String delims = "[ ]+";
                   String command = "";
 		  String text= scan.nextLine();
                   //If the coordinator sent a request to vote for commiting
+                  /*
                   if(chord.isVoting())
                   {
                       inputCorrect = false;
@@ -61,7 +62,7 @@ public class ChordUser
                   }
                   //else continue with normal operations
                   else
-                  {
+                  {*/
                     String[] tokens = text.split(delims);
                       if (tokens[0].equals("join") && tokens.length == 2) {
                           try {
@@ -127,6 +128,7 @@ public class ChordUser
                           chord.sendMessage(port,chord, Chord.enum_MSG.ELECT);
                       }
                       */
+                      /*
                       if(chord.isCoordinator() == 1)
                       {
                         if(tokens[0].toUpperCase().equals("CANCOMMIT"))
@@ -134,15 +136,13 @@ public class ChordUser
                             System.out.println("SENDING CANCOMMIT MESSAGE");
                             chord.sendMessage(port, chord, Chord.enum_MSG.CANCOMMIT);
                         }
-                      }
-                    }
-                }
+                      }*/
+                    }                
 		}
 		catch(RemoteException e)
 		{
-		} catch (IOException ex) {		
-                    Logger.getLogger(ChordUser.class.getName()).log(Level.SEVERE, null, ex);
-                }		
+                    e.printStackTrace();
+		}		
 	      }
 	   }, 1000, 1000);
     }

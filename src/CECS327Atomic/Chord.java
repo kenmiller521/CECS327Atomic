@@ -2,6 +2,7 @@ package CECS327Atomic;
 //test commit
 
 import CECS327Atomic.ChordMessageInterface;
+import static CECS327Atomic.Transaction.Operation.*;
 import java.rmi.*;
 import java.rmi.registry.*;
 import java.rmi.server.*;
@@ -27,7 +28,7 @@ ChordMessageInterface successor;
     int i;   		// GUID
     public String msgID;
     public enum_MSG msg;
-    private int isCoordinator;
+    //private int isCoordinator;
     
     HashMap<Integer,Timestamp> LastWriteTime = new HashMap<Integer,Timestamp>(); 
     HashMap<Integer,Timestamp> LastReadTime = new HashMap<Integer,Timestamp>();
@@ -52,7 +53,7 @@ ChordMessageInterface successor;
         //   return true;
         //}
        //else
-            return false;
+            return true;
         //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -62,18 +63,22 @@ ChordMessageInterface successor;
         FileStream stream = new FileStream(".\\"+  i +"\\repository\\"+fileName);
         //open the file, transmit
         
-        Transaction trans = new Transaction(Transaction.Operation.WRITE);
+        Transaction trans = new Transaction(Transaction.Operation.WRITE,stream);
         
-        int guid1 = md5(fileName+1);
-        int guid2 = md5(fileName+2);
-        int guid3 = md5(fileName+3);
-        int guid4 = md5(fileName);
+        int guid1 = md5(fileName+1)%11;
+        int guid2 = md5(fileName+2)%11;
+        int guid3 = md5(fileName+3)%11;
+        int guid4 = md5(fileName)%11;
+        
         trans.guid = guid4;
         ChordMessageInterface p1 = locateSuccessor(guid1);
+        System.out.println("p1: " + p1.getId());
         boolean v1 = p1.canCommit(trans);
         ChordMessageInterface p2 = locateSuccessor(guid2);
+        System.out.println("p2: " + p2.getId());
         boolean v2 = p2.canCommit(trans);
         ChordMessageInterface p3 = locateSuccessor(guid3);
+        System.out.println("p3: " + p3.getId());
         boolean v3 = p3.canCommit(trans);
         //ChordMessageInterface p4 = locateSuccessor(guid4);
         //boolean v4 = p4.canCommit(trans);
@@ -377,16 +382,6 @@ ChordMessageInterface successor;
           if(coordinator != null)
           {
               System.out.println("coordinator "+ coordinator.getId());              
-          }          
-          if(isCoordinator==1)
-          {              
-              System.out.println("participants ");
-              iter = nodeList.iterator();
-              while(iter.hasNext())
-              {
-                  element = (ChordMessageInterface) iter.next();
-                  System.out.println("\t"+element.getId());
-              }
           }
        }
         catch(RemoteException e){
@@ -420,6 +415,7 @@ ChordMessageInterface successor;
         }
     }
 */
+    /*
     @Override
     public void answer(int port) throws IOException, RemoteException {
         //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -441,10 +437,6 @@ ChordMessageInterface successor;
             canCommit();
         }
     } 
-    public int isCoordinator()
-    {
-        return isCoordinator;
-    }
     public void setCoordinator(ChordMessageInterface j) throws IOException
     {
         if(coordinator == null)
@@ -461,7 +453,7 @@ ChordMessageInterface successor;
         if(j.getId() != coordinator.getId())
             nodeList.add(j);
     }
-    
+    /*
     public void canCommit() throws IOException, RemoteException 
     {
         //reset counters
@@ -510,7 +502,8 @@ ChordMessageInterface successor;
                 }
             }
         }, 0, 1000);           
-    }
+    }*/
+    /*
     public void cancelCanCommitRequest() throws IOException, RemoteException 
     {
         currentlyVoting = false;
@@ -578,11 +571,12 @@ ChordMessageInterface successor;
                 element.cancelCanCommitRequest();
             }
         }            
-    }
+    }*/
     public boolean isVoting()
     {
         return currentlyVoting;
     }
+    /*
     public void sendVote(String text) throws IOException
     {
         if(text.equals("Y"))
@@ -596,7 +590,7 @@ ChordMessageInterface successor;
         }
         currentlyVoting = false;
     
-    }
+    }*/
     
     public boolean isCommitting()
     {
@@ -606,12 +600,13 @@ ChordMessageInterface successor;
     @Override
     public void doCommit(Transaction trans, int guid,FileStream stream) throws IOException, RemoteException
     {
-        if (trans.Operation == WRITE)
+        if (trans.op == WRITE)
         {
+            System.out.println("DOING COMMIT");
             currentlyCommitting = true;
             put(guid, trans.fileStream);
             LastWriteTime.put(trans.guid, trans.timestamp);
-            String fileName = ".\\"+i+"\\repository\\" + trans.guid;
+            String fileName = ".\\"+i+"\\repository\\" + trans.guid+".txt";
             
             try
             {
@@ -619,6 +614,9 @@ ChordMessageInterface successor;
                 fileOutput.write(trans.fileStream.read());
                 
             }catch(IOException e)
+            {
+                e.printStackTrace();
+            }
         }
         
         

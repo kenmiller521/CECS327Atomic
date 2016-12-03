@@ -22,15 +22,15 @@ public interface ChordMessageInterface extends Remote
     
     
     //public void election(int port) throws IOException, RemoteException;
-    public void answer(int port) throws IOException, RemoteException;
-    public void receiveMessage(ChordMessageInterface j, enum_MSG msg) throws IOException, RemoteException;
-    public void sendMessage(int port,ChordMessageInterface j, enum_MSG msg)throws IOException, RemoteException;
-    public void setCoordinator(ChordMessageInterface j) throws IOException, RemoteException;
-    public void cancelCanCommitRequest() throws IOException, RemoteException;
-    public void sendCanCommitToParticipant() throws IOException, RemoteException;
-    public void canCommitTimeout() throws IOException, RemoteException;
-    public void sendCommitVoteToCoordinator(int vote,ChordMessageInterface j) throws IOException, RemoteException;
-    public void addChordObjectToCoordinatorList(ChordMessageInterface j) throws IOException, RemoteException;
+    //public void answer(int port) throws IOException, RemoteException;
+    //public void receiveMessage(ChordMessageInterface j, enum_MSG msg) throws IOException, RemoteException;
+   // public void sendMessage(int port,ChordMessageInterface j, enum_MSG msg)throws IOException, RemoteException;
+    //public void setCoordinator(ChordMessageInterface j) throws IOException, RemoteException;
+    //public void cancelCanCommitRequest() throws IOException, RemoteException;
+   // public void sendCanCommitToParticipant() throws IOException, RemoteException;
+    //public void canCommitTimeout() throws IOException, RemoteException;
+    //public void sendCommitVoteToCoordinator(int vote,ChordMessageInterface j) throws IOException, RemoteException;
+    //public void addChordObjectToCoordinatorList(ChordMessageInterface j) throws IOException, RemoteException;
     
     public boolean canCommit(Transaction trans) throws IOException, RemoteException;
     //Yes/No: Call from coord to participant to ask whether it can commit a transaction. Participant replies with its vote

@@ -3,7 +3,6 @@ package CECS327Atomic;
 import java.math.BigInteger;
 import java.io.*;
 import java.nio.ByteBuffer;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 
@@ -14,14 +13,14 @@ public class Transaction implements Serializable  {
     Operation op;
     byte vote;
     FileStream fileStream;   
-    MessageDigest md = MessageDigest.getInstance("MD5");
     
     Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-    public Transaction(Operation op) throws NoSuchAlgorithmException
+    public Transaction(Operation op, FileStream stream) throws NoSuchAlgorithmException, IOException
     {
         
         //id = md5(date + ip+port);
         this.op = op;
+        fileStream = stream;
     }
     public void setTimestamp(Timestamp stamp)
     {
