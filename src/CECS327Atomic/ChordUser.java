@@ -32,7 +32,7 @@ public class ChordUser
 		while (true)
 		{
                   System.out.println("Usage: \n\tjoin <port>\n\twrite <file> (the file must be an integer stored in the working directory, i.e, ./port/file");
-                  System.out.println("\tread <file>\n\tdelete <file>");
+                  System.out.println("\tread <file>\n\tdelete <file>\n\tprint");
                   //if(chord.isCoordinator()==1)
                   //{
                   //    System.out.println("COORDINATOR USAGE: \n\tcanCommit");
@@ -99,6 +99,8 @@ public class ChordUser
                       }
                       if  (tokens[0].equals("read") && tokens.length == 2) {
                           try {	
+                              chord.readAtomic(tokens[1]);
+                              /*
                             //int guid = Integer.parseInt(tokens[1]);
                             int guid = md5(tokens[1]);
                             // If you are using windows you have to use
@@ -109,6 +111,7 @@ public class ChordUser
                             FileStream file = new FileStream(path);
                             ChordMessageInterface peer = chord.locateSuccessor(guid);
                             peer.put(guid, file); // put file into ring
+                              */
                           } catch (Exception e) {
                                   e.printStackTrace();
                           } 
@@ -116,7 +119,7 @@ public class ChordUser
                       if  (tokens[0].equals("delete") && tokens.length == 2) {
                           try {
                               //everytime we use the cloud use the interger, client use the string
-                            int guid = md5(tokens[1]);
+                            int guid = md5(tokens[1])%11;
                             chord.delete(guid);
                           } catch (Exception e) {
                                 e.printStackTrace();

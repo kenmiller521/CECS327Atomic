@@ -108,8 +108,50 @@ ChordMessageInterface successor;
         //do commit/do abort depending on votes
        // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    void readAtomic(String fileName)
+    void readAtomic(String fileName) throws IOException, NoSuchAlgorithmException
     {
+        FileStream stream = new FileStream(".\\"+  i +"\\repository\\"+fileName);
+        //FileInputStream inputStream = new FileInputStream(".\\"+  i +"\\repository\\"+fileName);
+        Transaction trans = new Transaction(Transaction.Operation.WRITE,stream);
+        trans.guid = md5(fileName)%11;
+        LastReadTime.put(trans.guid, trans.getTimestamp());
+        InputStream inputStream = get(trans.guid);
+        //inputStream = (FileInputStream) get(md5(fileName)%11);
+        try
+        {
+            if(inputStream.available()>0)
+            {
+                byte[] buffer = new byte[inputStream.available()];
+                inputStream.read(buffer);
+                 File targetFile = new File(".\\"+  i +"\\userSpace\\"+fileName);
+                OutputStream outStream = new FileOutputStream(targetFile);
+                outStream.write(buffer);
+                //System.out.println("READ:" + j);
+            }
+        }
+        catch(IOException e)
+        {
+            e.printStackTrace();
+        }
+        /*
+        if (trans.op == WRITE)
+        {
+            System.out.println("DOING COMMIT");
+            currentlyCommitting = true;
+            put(guid, trans.fileStream);
+            LastWriteTime.put(trans.guid, trans.timestamp);
+            String fileName = ".\\"+i+"\\repository\\" + trans.guid;
+            
+            try
+            {
+                FileOutputStream fileOutput = new FileOutputStream(fileName);
+                fileOutput.write(trans.fileStream.read());
+                
+            }catch(IOException e)
+            {
+                e.printStackTrace();
+            }
+        }*/
     }
 
     
@@ -606,13 +648,12 @@ ChordMessageInterface successor;
             currentlyCommitting = true;
             put(guid, trans.fileStream);
             LastWriteTime.put(trans.guid, trans.timestamp);
-            String fileName = ".\\"+i+"\\repository\\" + trans.guid+".txt";
+            String fileName = ".\\"+i+"\\repository\\" + trans.guid;
             
             try
             {
                 FileOutputStream fileOutput = new FileOutputStream(fileName);
                 fileOutput.write(trans.fileStream.read());
-                
             }catch(IOException e)
             {
                 e.printStackTrace();
