@@ -1,3 +1,7 @@
+//Ken Miller, 013068183
+//Michael Zatlin, 011600158
+//Bryan Di Nardo, 011795743
+//CECS327 Atomic Commit
 package CECS327Atomic;
 
 import java.io.*;

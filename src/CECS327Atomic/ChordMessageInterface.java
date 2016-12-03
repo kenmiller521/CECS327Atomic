@@ -1,3 +1,7 @@
+//Ken Miller, 013068183
+//Michael Zatlin, 011600158
+//Bryan Di Nardo, 011795743
+//CECS327 Atomic Commit
 package CECS327Atomic;
 
 import CECS327Atomic.Chord.enum_MSG;
@@ -20,17 +24,8 @@ public interface ChordMessageInterface extends Remote
     public void delete(int id) throws IOException, RemoteException;
     
     
-    
-    //public void election(int port) throws IOException, RemoteException;
-    //public void answer(int port) throws IOException, RemoteException;
-    //public void receiveMessage(ChordMessageInterface j, enum_MSG msg) throws IOException, RemoteException;
-   // public void sendMessage(int port,ChordMessageInterface j, enum_MSG msg)throws IOException, RemoteException;
-    //public void setCoordinator(ChordMessageInterface j) throws IOException, RemoteException;
-    //public void cancelCanCommitRequest() throws IOException, RemoteException;
-   // public void sendCanCommitToParticipant() throws IOException, RemoteException;
-    //public void canCommitTimeout() throws IOException, RemoteException;
-    //public void sendCommitVoteToCoordinator(int vote,ChordMessageInterface j) throws IOException, RemoteException;
-    //public void addChordObjectToCoordinatorList(ChordMessageInterface j) throws IOException, RemoteException;
+    //need function to send haveCommited to the actual coordinator
+    public void setCoordinator(ChordMessageInterface j) throws IOException, RemoteException;
     
     public boolean canCommit(Transaction trans) throws IOException, RemoteException;
     //Yes/No: Call from coord to participant to ask whether it can commit a transaction. Participant replies with its vote
@@ -41,7 +36,7 @@ public interface ChordMessageInterface extends Remote
     public void doAbort(Transaction trans) throws IOException, RemoteException;
     // Call from the coord to participant to tell participant to abort its part of a transaction
     
-    public void haveCommitted() throws IOException, RemoteException;
+    public void haveCommitted(Transaction trans, ChordMessageInterface j) throws IOException, RemoteException;
     // Call from participant to the the coord to confirm that is has commited the transaction
     
     public boolean getDecision() throws IOException, RemoteException;

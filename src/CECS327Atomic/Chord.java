@@ -1,5 +1,8 @@
+//Ken Miller, 013068183
+//Michael Zatlin, 011600158
+//Bryan Di Nardo, 011795743
+//CECS327 Atomic Commit
 package CECS327Atomic;
-//test commit
 
 import CECS327Atomic.ChordMessageInterface;
 import static CECS327Atomic.Transaction.Operation.*;
@@ -20,8 +23,8 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
     public static final int M = 2;
     Timestamp timestamp = new Timestamp(System.currentTimeMillis());
     Registry registry;    // rmi registry for lookup the remote objects.
-    ChordMessageInterface coordinator;
-ChordMessageInterface successor;
+    public ChordMessageInterface coordinator;
+    ChordMessageInterface successor;
     ChordMessageInterface predecessor;
     ChordMessageInterface[] finger;
     int nextFinger;
@@ -33,12 +36,8 @@ ChordMessageInterface successor;
     HashMap<Integer,Timestamp> LastWriteTime = new HashMap<Integer,Timestamp>(); 
     HashMap<Integer,Timestamp> LastReadTime = new HashMap<Integer,Timestamp>();
     List<ChordMessageInterface> nodeList = new ArrayList<ChordMessageInterface>();
-    private Iterator iter;
-    private ChordMessageInterface element;
     private Boolean currentlyVoting;
-    private int yesVoteCounter,noVoteCounter;
     private Boolean currentlyCommitting;
-
     /**
      *
      * @param trans
@@ -47,22 +46,29 @@ ChordMessageInterface successor;
      * @throws RemoteException
      */
     @Override
-    public boolean canCommit(Transaction trans) throws IOException, RemoteException {
-        //if(trans.timestamp > LastWriteTime.)
-        //{
-        //   return true;
-        //}
-       //else
-            return true;
-        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public boolean canCommit(Transaction trans) throws IOException, RemoteException 
+    {
+        //save the transaction in temp storage
+            File file = new File(".\\"+  i +"\\temp\\"+trans.guid);
+            if(file.createNewFile())
+                System.out.println("Temp file made");
+            if(LastReadTime.get(trans.guid)== null || LastWriteTime.get(trans.guid)== null)
+            {
+                System.out.println("TIMESTAMP IS NULL - NO ENTRIES IN HASHMAP THUS FIRST TIME READ/WRITE");
+                return true;
+            }
+            else if(trans.timestamp.compareTo(LastReadTime.get(trans.guid))>0 && trans.timestamp.compareTo(LastWriteTime.get(trans.guid))>0)
+            {
+                System.out.println("HERE GUID: " + trans.guid);
+                return true;
+            }
+            else
+                return false;
     }
 
     void writeAtomic(String fileName) throws NoSuchAlgorithmException, UnsupportedEncodingException, RemoteException, IOException 
     {
-        //open up the file
-        FileStream stream = new FileStream(".\\"+  i +"\\repository\\"+fileName);
-        //open the file, transmit
-        
+        FileStream stream = new FileStream(".\\"+  i +"\\repository\\"+fileName);        
         Transaction trans = new Transaction(Transaction.Operation.WRITE,stream);
         
         int guid1 = md5(fileName+1)%11;
@@ -72,13 +78,13 @@ ChordMessageInterface successor;
         
         trans.guid = guid4;
         ChordMessageInterface p1 = locateSuccessor(guid1);
-        System.out.println("p1: " + p1.getId());
+        p1.setCoordinator(this);
         boolean v1 = p1.canCommit(trans);
         ChordMessageInterface p2 = locateSuccessor(guid2);
-        System.out.println("p2: " + p2.getId());
+        p2.setCoordinator(this);
         boolean v2 = p2.canCommit(trans);
         ChordMessageInterface p3 = locateSuccessor(guid3);
-        System.out.println("p3: " + p3.getId());
+        p3.setCoordinator(this);
         boolean v3 = p3.canCommit(trans);
         //ChordMessageInterface p4 = locateSuccessor(guid4);
         //boolean v4 = p4.canCommit(trans);
@@ -89,24 +95,14 @@ ChordMessageInterface successor;
             p2.doCommit(trans,guid2,stream);
             stream.reset();
             p3.doCommit(trans,guid3,stream);
-            stream.reset();
-           // p4.doCommit(trans,guid4);
-            
+            stream.reset();            
         }
         else
         {
             p1.doAbort(trans);
             p2.doAbort(trans);
             p3.doAbort(trans);
-            //p4.doAbort(trans);
         }
-        //use guid4 to update the database
-        
-        
-        //Find the peers which should be located, look for participants
-        //can commit to all of them
-        //do commit/do abort depending on votes
-       // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     void readAtomic(String fileName) throws IOException, NoSuchAlgorithmException
     {
@@ -123,7 +119,7 @@ ChordMessageInterface successor;
             {
                 byte[] buffer = new byte[inputStream.available()];
                 inputStream.read(buffer);
-                 File targetFile = new File(".\\"+  i +"\\userSpace\\"+fileName);
+                File targetFile = new File(".\\"+  i +"\\userSpace\\"+md5(fileName)%11);
                 OutputStream outStream = new FileOutputStream(targetFile);
                 outStream.write(buffer);
                 //System.out.println("READ:" + j);
@@ -133,25 +129,6 @@ ChordMessageInterface successor;
         {
             e.printStackTrace();
         }
-        /*
-        if (trans.op == WRITE)
-        {
-            System.out.println("DOING COMMIT");
-            currentlyCommitting = true;
-            put(guid, trans.fileStream);
-            LastWriteTime.put(trans.guid, trans.timestamp);
-            String fileName = ".\\"+i+"\\repository\\" + trans.guid;
-            
-            try
-            {
-                FileOutputStream fileOutput = new FileOutputStream(fileName);
-                fileOutput.write(trans.fileStream.read());
-                
-            }catch(IOException e)
-            {
-                e.printStackTrace();
-            }
-        }*/
     }
 
     
@@ -205,7 +182,6 @@ ChordMessageInterface successor;
 	 //TODO Store the file at ./port/repository/guid
       try {
 	 String fileName = ".\\"+i+"\\repository\\" + guid;
-         //String fileName = "./"+i+"/repository/" + guid;
 	 FileOutputStream output = new FileOutputStream(fileName);
 	 while (stream.available() > 0)
 	    output.write(stream.read());
@@ -218,7 +194,6 @@ ChordMessageInterface successor;
     
     public InputStream get(int guid) throws RemoteException {
 	 String fileName = ".\\"+i+"\\repository\\" + guid;
-         //String fileName = "./"+i+"/repository/" + guid;
 	 FileStream file= null;
 	 try{
 	   file = new FileStream(fileName);
@@ -230,7 +205,6 @@ ChordMessageInterface successor;
     
     public void delete(int guid) throws RemoteException {
 	  String fileName = ".\\"+i+"\\repository\\" + guid;
-          //String fileName = "./"+i+"/repository/" + guid;
 
           File file = new File(fileName);
 	  file.delete();
@@ -421,218 +395,23 @@ ChordMessageInterface successor;
 	      finger[i] = null;
 	   }
 	  }
-          if(coordinator != null)
-          {
-              System.out.println("coordinator "+ coordinator.getId());              
-          }
        }
         catch(RemoteException e){
 	       System.out.println("Cannot retrive id");
         } 
     }
-    /*
-    //function that handles the election of the processes
-    public void election(int port) throws IOException {
-        if(port == i)
-        {
-            System.out.println("YOU ARE THE COORDINATOR");
-            isCoordinator = 1;
-            System.out.println("COORDINATOR PORT: " + this.i);
-            successor.setCoordinator(this);
-            
-        }
-        else if(port > i)
-        {
-            //If the passed port is bigger than this port, then send the passed port to the successor
-            System.out.println("PASSING PREDECESSOR PORT TO SUCCESSOR");
-            successor.election(port);
-            isCoordinator = 0;
-        }
-        else
-        {
-            System.out.println("PASSING YOUR PORT TO SUCCESSOR");
-            //if the port is smaller than this port, then send this port to the successor
-            successor.election(i);
-            isCoordinator = 0;
-        }
-    }
-*/
-    /*
-    @Override
-    public void answer(int port) throws IOException, RemoteException {
-        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        System.out.println("YOU ARE THE COORDINATOR TO USER " + port);
-    }
-      @Override
-    public void receiveMessage(ChordMessageInterface j, enum_MSG msg) throws IOException, RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void sendMessage(int port,ChordMessageInterface j, enum_MSG msg) throws IOException, RemoteException {
-        if(msg.toString().equals("ELECT"))
-        {
-            //successor.election(i);            
-        } 
-        else if(msg.toString().equals("CANCOMMIT"))
-        {
-            canCommit();
-        }
-    } 
     public void setCoordinator(ChordMessageInterface j) throws IOException
     {
         if(coordinator == null)
         {
             coordinator = j;
-            successor.setCoordinator(coordinator);
-            coordinator.addChordObjectToCoordinatorList(this);
-            
+            System.out.println("Coordinator id: " +j.getId());
         }        
     }
-    @Override
-    public void addChordObjectToCoordinatorList(ChordMessageInterface j) throws IOException, RemoteException 
-    {
-        if(j.getId() != coordinator.getId())
-            nodeList.add(j);
-    }
-    /*
-    public void canCommit() throws IOException, RemoteException 
-    {
-        //reset counters
-        noVoteCounter = 0;
-        yesVoteCounter = 0;
-        iter = nodeList.iterator();
-        Timer tt = new Timer();
-        //send the canCommit request to participants
-        while(iter.hasNext())
-        {
-            element = (ChordMessageInterface) iter.next();
-            //send the request
-            element.sendCanCommitToParticipant();
-        }
-        //stay until all votes are yes or if there is one no counter
-        tt.schedule(new TimerTask() 
-        {
-            @Override
-            public void run() 
-            {               
-                if(noVoteCounter == 0 && (yesVoteCounter != nodeList.size()))
-                { 
-                    System.out.println("Waiting for participants to respond.");
-                }
-                else if(yesVoteCounter == nodeList.size())
-                {
-                    System.out.println("All participants ready to commit. Proceed with menu selection.");  
-                    System.out.println("Usage: \n\tjoin <port>\n\twrite <file> (the file must be an integer stored in the working directory, i.e, ./port/file");
-                    System.out.println("\tread <file>\n\tdelete <file>\n\tprint\n\telection");
-                    if(isCoordinator()==1)
-                    {
-                        System.out.println("COORDINATOR USAGE: \n\tcanCommit");
-                    }
-                    tt.cancel();
-                }
-                else if(noVoteCounter != 0)
-                {
-                    System.out.println("Aborting. A participant is not ready to commit. Proceed with menu selection.");
-                    System.out.println("Usage: \n\tjoin <port>\n\twrite <file> (the file must be an integer stored in the working directory, i.e, ./port/file");
-                    System.out.println("\tread <file>\n\tdelete <file>\n\tprint\n\telection");   
-                    if(isCoordinator()==1)
-                    {
-                        System.out.println("COORDINATOR USAGE: \n\tcanCommit");
-                    }
-                    tt.cancel();
-                }
-            }
-        }, 0, 1000);           
-    }*/
-    /*
-    public void cancelCanCommitRequest() throws IOException, RemoteException 
-    {
-        currentlyVoting = false;
-        System.out.println("COORDINATOR: Commit cancelled. Proceed with menu selection.");
-        System.out.println("Usage: \n\tjoin <port>\n\twrite <file> (the file must be an integer stored in the working directory, i.e, ./port/file");
-        System.out.println("\tread <file>\n\tdelete <file>\n\tprint\n\telection");  
-    }
-    public void sendCanCommitToParticipant() throws IOException, RemoteException
-    {
-        currentlyVoting = true;
-        System.out.println("COORDINATOR: Can you commit(Y/N)?"); 
-        Timer t = new Timer();
-        t.schedule(new TimerTask() 
-        {
-            int i = 10;
-            @Override
-            public void run() 
-            {                
-                System.out.println("Timeout in " + i + "."); 
-                i--;
-                if(i==0)
-                {
-                    try 
-                    {
-                        //send timeout to coordinator to resend cancommit request
-                        coordinator.canCommitTimeout();
-                    }
-                    catch (IOException ex) 
-                    {
-                        Logger.getLogger(Chord.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    t.cancel();
-                }
-                else if(currentlyVoting == false)
-                {
-                    t.cancel();
-                }
-            }
-        }, 0, 1000);     
-    }
-    @Override
-    public void canCommitTimeout() throws IOException, RemoteException 
-    {
-        System.out.println("Timeout - Resending request.");
-        canCommit();
-    }
-    public void sendCommitVoteToCoordinator(int vote,ChordMessageInterface j) throws IOException, RemoteException 
-    {
-        if(vote == 1)
-        {
-            System.out.println("YES VOTE FROM " + j.getId());
-            yesVoteCounter++;
-        }
-        else
-        {
-            noVoteCounter++;
-            System.out.println("NO VOTE FROM " + j.getId());
-            //cancel commit
-            iter = nodeList.iterator();
-            //send the canCommit request to participants
-            while(iter.hasNext())
-            {
-                element = (ChordMessageInterface) iter.next();
-                //send the request
-                element.cancelCanCommitRequest();
-            }
-        }            
-    }*/
     public boolean isVoting()
     {
         return currentlyVoting;
     }
-    /*
-    public void sendVote(String text) throws IOException
-    {
-        if(text.equals("Y"))
-        {
-            //save work to storage
-            coordinator.sendCommitVoteToCoordinator(1,this);
-        }
-        else if(text.equals("N"))
-        {
-            coordinator.sendCommitVoteToCoordinator(0,this);
-        }
-        currentlyVoting = false;
-    
-    }*/
     
     public boolean isCommitting()
     {
@@ -648,6 +427,7 @@ ChordMessageInterface successor;
             currentlyCommitting = true;
             put(guid, trans.fileStream);
             LastWriteTime.put(trans.guid, trans.timestamp);
+            LastReadTime.put(trans.guid, trans.timestamp);
             String fileName = ".\\"+i+"\\repository\\" + trans.guid;
             
             try
@@ -659,8 +439,7 @@ ChordMessageInterface successor;
                 e.printStackTrace();
             }
         }
-        
-        
+        coordinator.haveCommitted(trans,this);       
     }
     
     @Override
@@ -670,8 +449,9 @@ ChordMessageInterface successor;
         System.out.println("COORDINATOR: Transaction Aborted");
     }
     
-    public void haveCommitted() throws IOException, RemoteException
+    public void haveCommitted(Transaction trans, ChordMessageInterface j) throws IOException, RemoteException
     {
+        System.out.println(j.getId() + " has commited. Timestamp: " + trans.timestamp);
         // TODO Call from paricipant to the the coord to confirm that is has commited the transaction
     }
     

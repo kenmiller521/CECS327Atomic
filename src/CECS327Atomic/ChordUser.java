@@ -1,3 +1,10 @@
+//Ken Miller, 013068183
+//Michael Zatlin, 011600158
+//Bryan Di Nardo, 011795743
+//CECS327 Atomic Commit
+
+
+
 package CECS327Atomic;
 
 import java.rmi.*;
@@ -33,36 +40,9 @@ public class ChordUser
 		{
                   System.out.println("Usage: \n\tjoin <port>\n\twrite <file> (the file must be an integer stored in the working directory, i.e, ./port/file");
                   System.out.println("\tread <file>\n\tdelete <file>\n\tprint");
-                  //if(chord.isCoordinator()==1)
-                  //{
-                  //    System.out.println("COORDINATOR USAGE: \n\tcanCommit");
-                 // }
                   String delims = "[ ]+";
                   String command = "";
 		  String text= scan.nextLine();
-                  //If the coordinator sent a request to vote for commiting
-                  /*
-                  if(chord.isVoting())
-                  {
-                      inputCorrect = false;
-                      while(!inputCorrect)
-                      {
-                          if(text.toUpperCase().equals("Y") || text.toUpperCase().equals("N"))
-                          {
-                              inputCorrect = true;
-                              chord.sendVote(text.toUpperCase());
-                          }
-                          else
-                          {
-                              System.out.println("Enter 'Y' or 'N'");
-                              text = scan.nextLine();
-                          }
-                      
-                      }
-                  }
-                  //else continue with normal operations
-                  else
-                  {*/
                     String[] tokens = text.split(delims);
                       if (tokens[0].equals("join") && tokens.length == 2) {
                           try {
@@ -140,7 +120,7 @@ public class ChordUser
                             chord.sendMessage(port, chord, Chord.enum_MSG.CANCOMMIT);
                         }
                       }*/
-                    }                
+                             }       
 		}
 		catch(RemoteException e)
 		{
