@@ -68,7 +68,7 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
 
     void writeAtomic(String fileName) throws NoSuchAlgorithmException, UnsupportedEncodingException, RemoteException, IOException 
     {
-        FileStream stream = new FileStream(".\\"+  i +"\\repository\\"+fileName);        
+        FileStream stream = new FileStream(".\\"+  i +"\\"+fileName);        
         Transaction trans = new Transaction(Transaction.Operation.WRITE,stream);
         
         int guid1 = md5(fileName+1)%11;
@@ -106,7 +106,7 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
     }
     void readAtomic(String fileName) throws IOException, NoSuchAlgorithmException
     {
-        FileStream stream = new FileStream(".\\"+  i +"\\repository\\"+fileName);
+        FileStream stream = new FileStream(".\\"+  i +"\\repository\\"+md5(fileName)%11);
         //FileInputStream inputStream = new FileInputStream(".\\"+  i +"\\repository\\"+fileName);
         Transaction trans = new Transaction(Transaction.Operation.WRITE,stream);
         trans.guid = md5(fileName)%11;
