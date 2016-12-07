@@ -427,7 +427,7 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
             currentlyCommitting = true;
             put(guid, trans.fileStream);
             LastWriteTime.put(trans.guid, trans.timestamp);
-            LastReadTime.put(trans.guid, trans.timestamp);
+            //LastReadTime.put(trans.guid, trans.timestamp);
             String fileName = ".\\"+i+"\\repository\\" + trans.guid;
             
             try
