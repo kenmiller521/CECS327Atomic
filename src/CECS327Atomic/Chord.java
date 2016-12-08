@@ -119,7 +119,7 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
             {
                 byte[] buffer = new byte[inputStream.available()];
                 inputStream.read(buffer);
-                File targetFile = new File(".\\"+  i +"\\userSpace\\"+md5(fileName)%11);
+                File targetFile = new File(".\\"+  i +"\\"+fileName);
                 OutputStream outStream = new FileOutputStream(targetFile);
                 outStream.write(buffer);
                 //System.out.println("READ:" + j);
