@@ -59,7 +59,6 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
             }
             else if(trans.timestamp.compareTo(LastReadTime.get(trans.guid))>0 && trans.timestamp.compareTo(LastWriteTime.get(trans.guid))>0)
             {
-                System.out.println("HERE GUID: " + trans.guid);
                 return true;
             }
             else
@@ -109,7 +108,10 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
         FileStream stream = new FileStream(".\\"+  i +"\\repository\\"+md5(fileName)%11);
         //FileInputStream inputStream = new FileInputStream(".\\"+  i +"\\repository\\"+fileName);
         Transaction trans = new Transaction(Transaction.Operation.WRITE,stream);
+        //get the current time and stamp it to the transaction
+        trans.timestamp = new Timestamp(System.currentTimeMillis());
         trans.guid = md5(fileName)%11;
+        System.out.println("Reading with timestamp " + trans.timestamp);
         LastReadTime.put(trans.guid, trans.getTimestamp());
         InputStream inputStream = get(trans.guid);
         //inputStream = (FileInputStream) get(md5(fileName)%11);
@@ -192,6 +194,7 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
     }
     
     
+    @Override
     public InputStream get(int guid) throws RemoteException {
 	 String fileName = ".\\"+i+"\\repository\\" + guid;
 	 FileStream file= null;
@@ -203,11 +206,15 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
         return file;        
     }
     
+    @Override
     public void delete(int guid) throws RemoteException {
 	  String fileName = ".\\"+i+"\\repository\\" + guid;
-
+          System.out.println("Attemping to delete file with GUID " + guid + " in " + ".\\"+i+"\\repository\\");
           File file = new File(fileName);
-	  file.delete();
+	  if(file.delete())              
+            System.out.println("Delete successful");
+          else
+            System.out.println("Delete unsuccessful. Try again later.");
     }
     
     public int getId() throws RemoteException {
@@ -423,7 +430,8 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
     {
         if (trans.op == WRITE)
         {
-            System.out.println("DOING COMMIT");
+            trans.timestamp = new Timestamp(System.currentTimeMillis());
+            System.out.println("Doing commit with timestamp " + trans.timestamp);
             currentlyCommitting = true;
             put(guid, trans.fileStream);
             LastWriteTime.put(trans.guid, trans.timestamp);
