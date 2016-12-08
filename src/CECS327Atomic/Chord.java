@@ -52,17 +52,33 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
             File file = new File(".\\"+  i +"\\temp\\"+trans.guid);
             if(file.createNewFile())
                 System.out.println("Temp file made");
+            
+            System.out.println(trans.timestamp + "/" + LastWriteTime.get(trans.guid));
             if(LastReadTime.get(trans.guid)== null || LastWriteTime.get(trans.guid)== null)
             {
                 System.out.println("TIMESTAMP IS NULL - NO ENTRIES IN HASHMAP THUS FIRST TIME READ/WRITE");
                 return true;
             }
+            
+            //check local last written time
+            else if(trans.timestamp.compareTo(LastWriteTime.get(trans.guid))>0)
+            {
+                System.out.println("Yes vote");
+                return true;
+            }
+            else
+            {
+                System.out.println("No vote");
+                return false;
+            }
+            
+            /*
             else if(trans.timestamp.compareTo(LastReadTime.get(trans.guid))>0 && trans.timestamp.compareTo(LastWriteTime.get(trans.guid))>0)
             {
                 return true;
             }
             else
-                return false;
+                return false;*/
     }
 
     void writeAtomic(String fileName) throws NoSuchAlgorithmException, UnsupportedEncodingException, RemoteException, IOException 
@@ -76,6 +92,7 @@ public class Chord extends java.rmi.server.UnicastRemoteObject implements ChordM
         int guid4 = md5(fileName)%11;
         
         trans.guid = guid4;
+        trans.timestamp = LastReadTime.get(guid4);
         ChordMessageInterface p1 = locateSuccessor(guid1);
         p1.setCoordinator(this);
         boolean v1 = p1.canCommit(trans);
